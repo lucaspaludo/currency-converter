@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
-const request = "https://api.hgbrasil.com/finance?format=json-cors&key=fe82a750";
+
+const request =
+    "https://api.hgbrasil.com/finance?format=json-cors&key=fe82a750";
 
 void main() async {
   print(await getData());
 
   runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
     home: Home(),
     theme: ThemeData(
         hintColor: Colors.amber,
@@ -36,9 +39,14 @@ class _HomeState extends State<Home> {
   final realController = TextEditingController();
   final dolarController = TextEditingController();
   final euroController = TextEditingController();
+  final yenController = TextEditingController();
+  final pesoController = TextEditingController();
 
   double dolar;
   double euro;
+  double yen;
+  double real;
+  double peso;
 
   void _realChanged(String text) {
     if (text.isEmpty) {
@@ -46,8 +54,10 @@ class _HomeState extends State<Home> {
       return;
     }
     double real = double.parse(text);
-    dolarController.text = (real / dolar).toStringAsPrecision(2);
-    euroController.text = (real / euro).toStringAsPrecision(2);
+    dolarController.text = (real / dolar).toStringAsFixed(2);
+    euroController.text = (real / euro).toStringAsFixed(2);
+    yenController.text = (real / yen).toStringAsFixed(2);
+    pesoController.text = (real / peso).toStringAsFixed(2);
   }
 
   void _dolarChanged(String text) {
@@ -56,8 +66,10 @@ class _HomeState extends State<Home> {
       return;
     }
     double dolar = double.parse(text);
-    realController.text = (dolar * this.dolar).toStringAsPrecision(2);
-    euroController.text = (dolar * this.dolar / euro).toStringAsPrecision(2);
+    realController.text = (dolar * this.dolar).toStringAsFixed(2);
+    euroController.text = (dolar * this.dolar / euro).toStringAsFixed(2);
+    yenController.text = (dolar * this.dolar / yen).toStringAsFixed(2);
+    pesoController.text = (dolar * this.dolar / peso).toStringAsFixed(2);
   }
 
   void _euroChanged(String text) {
@@ -66,14 +78,42 @@ class _HomeState extends State<Home> {
       return;
     }
     double euro = double.parse(text);
-    realController.text = (euro * this.euro).toStringAsPrecision(2);
-    dolarController.text = (euro * this.euro / dolar).toStringAsPrecision(2);
+    realController.text = (euro * this.euro).toStringAsFixed(2);
+    dolarController.text = (euro * this.euro / dolar).toStringAsFixed(2);
+    yenController.text = (euro * this.euro / yen).toStringAsFixed(2);
+    pesoController.text = (euro * this.euro / peso).toStringAsFixed(2);
+  }
+
+  void _yenChanged(String text) {
+    if (text.isEmpty) {
+      _clearAll();
+      return;
+    }
+    double yen = double.parse(text);
+    realController.text = (yen * this.yen).toStringAsFixed(2);
+    dolarController.text = (yen * this.yen / dolar).toStringAsFixed(2);
+    euroController.text = (yen * this.yen / euro).toStringAsFixed(2);
+    pesoController.text = (yen * this.yen / peso).toStringAsFixed(2);
+  }
+
+  void _pesoChanged(String text) {
+    if (text.isEmpty) {
+      _clearAll();
+      return;
+    }
+    double peso = double.parse(text);
+    realController.text = (peso * this.peso).toStringAsFixed(2);
+    dolarController.text = (peso * this.peso / dolar).toStringAsFixed(2);
+    euroController.text = (peso * this.peso / euro).toStringAsFixed(2);
+    yenController.text = (peso * this.peso / yen).toStringAsFixed(2);
   }
 
   void _clearAll() {
     realController.text = "";
     dolarController.text = "";
     euroController.text = "";
+    yenController.text = "";
+    pesoController.text = "";
   }
 
   @override
@@ -101,13 +141,16 @@ class _HomeState extends State<Home> {
                   if (snapshot.hasError) {
                     return Center(
                         child: Text(
-                      "Erro ao carregaar dados...",
+                      "Erro ao carregar dados...",
                       style: TextStyle(color: Colors.amber, fontSize: 25.0),
                       textAlign: TextAlign.center,
                     ));
                   } else {
-                    dolar = snapshot.data["results"]["currencies"]["USD"]["buy"];
-                    euro =  snapshot.data["results"]["currencies"]["EUR"]["buy"];
+                    dolar =
+                        snapshot.data["results"]["currencies"]["USD"]["buy"];
+                    euro = snapshot.data["results"]["currencies"]["EUR"]["buy"];
+                    yen = snapshot.data["results"]["currencies"]["JPY"]["buy"];
+                    peso = snapshot.data["results"]["currencies"]["ARS"]["buy"];
                     return SingleChildScrollView(
                       padding: EdgeInsets.all(10.0),
                       child: Column(
@@ -116,13 +159,18 @@ class _HomeState extends State<Home> {
                           Icon(Icons.monetization_on,
                               size: 150.0, color: Colors.amber),
                           buildTextField(
-                              "Reais", "R\$", realController, _realChanged),
+                              "Reais", "R\$ ", realController, _realChanged),
                           Divider(),
-                          buildTextField("Dólares", "US\$", dolarController,
+                          buildTextField("Dólares", "US\$ ", dolarController,
                               _dolarChanged),
                           Divider(),
                           buildTextField(
-                              "Euros", "€", euroController, _euroChanged),
+                              "Euros", "€ ", euroController, _euroChanged),
+                          Divider(),
+                          buildTextField(
+                              "Ienes", "¥ ", yenController, _yenChanged),
+                          Divider(),
+                          buildTextField("Pesos Argentinos", "ARS\$ ", pesoController, _pesoChanged),
                         ],
                       ),
                     );
